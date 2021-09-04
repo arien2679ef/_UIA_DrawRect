@@ -1,0 +1,48 @@
+    ; Loop through the array displaying only visable windows with a title.
+    For $i = 1 To $aList[0][0]
+        If $aList[$i][0] <> "" And BitAND(WinGetState($aList[$i][1]), 2) Then
+            $hWND=$aList[$i][1]
+            $wClass=_WinAPI_GetClassName($hWnd)
+            if $wClass="CabinetWClass" then
+                consolewrite("Title: " & $aList[$i][0] & " Handle: " & $hWnd &  " Class: " & $wClass & @CRLF )
+                $controlTxt="[CLASS:DirectUIHWND; INSTANCE:3]"
+                ; Retrieve the position x, y and size (width and height)
+                Local $aPos = controlgetpos($hwnd,"",$controltxt)
+                Local $aHandle = controlgethandle($hwnd,"",$controlTxt)
+                consolewrite($apos[0] & $apos[1] & $apos[2] & $apos[3])
+;~              _UIA_DrawRect($apos[0], $apos[1], $apos[0]+$apos[2], $apos[1] + $apos[3])
+;~              left,right,top,bottom
+                _UIA_DrawRect($apos[0], $apos[0]+$apos[2], $apos[1],$apos[1]+$apos[3])
+;~              mousemove($apos[0]+5,$apos[1]+30)
+                mouseclick("left",$apos[0]+5,$apos[1]+30,2)
+
+
+
+            endif
+        endif
+    Next
+
+EndFunc   ;==>Example
+
+
+; Draw rectangle on screen.
+Func _UIA_DrawRect($tLeft, $tRight, $tTop, $tBottom, $color = 0xFF, $PenWidth = 4)
+    Local $hDC, $hPen, $obj_orig, $x1, $x2, $y1, $y2
+    $x1 = $tLeft
+    $x2 = $tRight
+    $y1 = $tTop
+    $y2 = $tBottom
+    $hDC = _WinAPI_GetWindowDC(0) ; DC of entire screen (desktop)
+    $hPen = _WinAPI_CreatePen($PS_SOLID, $PenWidth, $color)
+    $obj_orig = _WinAPI_SelectObject($hDC, $hPen)
+
+    _WinAPI_DrawLine($hDC, $x1, $y1, $x2, $y1) ; horizontal to right
+    _WinAPI_DrawLine($hDC, $x2, $y1, $x2, $y2) ; vertical down on right
+    _WinAPI_DrawLine($hDC, $x2, $y2, $x1, $y2) ; horizontal to left right
+    _WinAPI_DrawLine($hDC, $x1, $y2, $x1, $y1) ; vertical up on left
+
+    ; clear resources
+    _WinAPI_SelectObject($hDC, $obj_orig)
+    _WinAPI_DeleteObject($hPen)
+    _WinAPI_ReleaseDC(0, $hDC)
+EndFunc   ;==>_UIA_DrawRect
